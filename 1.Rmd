@@ -1,0 +1,117 @@
+---
+title: '1'
+author: "JT"
+date: "28/11/2020"
+output: html_document
+---
+
+
+```{r}
+dbinom(6, size = 9, prob = 0.5)
+```
+```{r}
+N <- 1e2
+
+p_grid <- seq(from=0, to = 1, length.out = N)
+
+prior <- rep(1,N)
+
+likelihood <- dbinom(x=6, size=9, prob=p_grid)
+
+unstd.posterior <- likelihood * prior
+
+posterior <- unstd.posterior / sum(unstd.posterior)
+
+plot(p_grid, posterior, xlab="probability of water", ylab = "posterior probability")
+```
+
+```{r}
+N <- 1e2
+
+p_grid <- seq(from=0, to = 1, length.out = N)
+
+prior <- ifelse(p_grid < 0.5, 0, 1)
+
+likelihood <- dbinom(x=6, size=9, prob=p_grid)
+
+unstd.posterior <- likelihood * prior
+
+posterior <- unstd.posterior / sum(unstd.posterior)
+
+plot(p_grid, posterior, xlab="probability of water", ylab = "posterior probability")
+```
+
+
+```{r}
+N <- 1e2
+
+p_grid <- seq(from=0, to = 1, length.out = N)
+
+prior <- rep(1,N)
+
+likelihood <- dbinom(x=5, size=7, prob=p_grid)
+
+unstd.posterior <- likelihood * prior
+
+posterior <- unstd.posterior / sum(unstd.posterior)
+
+plot(p_grid, posterior, xlab="probability of water", ylab = "posterior probability")
+```
+
+
+
+```{r}
+globe.qa <- quap(
+  flist = alist(
+    W ~ dbinom(W+L,p), #likelihood function
+    p ~ dunif(0,1) #unif prior
+  ),
+  data = list(W=20, L=10) # observations
+  )
+
+precis(globe.qa)
+```
+
+```{r}
+W <- 20
+L <- 10
+
+curve(dbeta(x,W+1, L+1),from=0,to=1)
+curve(dnorm(x,0.67,0.09),lty=2,add=TRUE)
+```
+
+```{r}
+p_grid <- seq(from=0,to=1, length.out=1e3)
+prob_p <- rep(1,1000)
+prob_data <- dbinom(6,size=9,prob=p_grid)
+posterior <- prob_data * prob_p
+posterior <- posterior/sum(posterior)
+```
+
+```{r}
+samples <- sample(p_grid, prob=posterior,size=1e4, replace=TRUE)
+
+plot(samples)
+dens(samples)
+```
+
+```{r}
+p_grid <- seq( from=0 , to=1 , length.out=1000 )
+prior <- rep( 1 , 1000 )
+likelihood <- dbinom( 3 , size=3 , prob=p_grid )
+posterior <- likelihood * prior
+posterior <- posterior / sum(posterior)
+set.seed(100)
+samples <- sample( p_grid , prob=posterior , size=1e4 , replace=TRUE )
+
+p_samples <- rbinom(1e4, size=15, samples)
+
+#prob of observing 8 in 15
+p8in15 <- sum(p_samples==8)/1e4
+
+#prob of 6 in 9
+p2_samples <- rbinom(1e4, size = 9, samples)
+p6in9 <- sum(p_samples==6)/1e4
+
+```
+
